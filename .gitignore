@@ -1,0 +1,23 @@
+# binaries
+*.o
+bench_revcomp
+bench_hash
+bench_gccontent
+bench_transversions
+check_gccontent
+check_transversions
+check_hash
+check_revcomp
+
+
+# Automatically generated
+*.g
+*.clang
+*.aux
+*.log
+hash.tex
+gccontent.tex
+revcomp.tex
+transversions.tex
+twid.out
+twid.pdf
