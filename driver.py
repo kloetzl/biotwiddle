@@ -34,17 +34,17 @@ def main(module,runs,compiler):
 
 	print('… done.')
 
-	print(matches)
+	# print(matches)
 	for key in matches:
 		matches[key].sort()
 
 	mins = {key: m[0] for key, m in matches.items()}
-	print(mins)
+	# print(mins)
 
-	texfile_path = module + ".tex"
-	subprocess.call(['sed','-i','/{}/d'.format(compiler),texfile_path],stdout=subprocess.PIPE)
+	texfile_path = module + "." + compiler
+	# subprocess.call(['sed','-i','/{}/d'.format(compiler),texfile_path],stdout=subprocess.PIPE)
 
-	texfile = open(texfile_path, 'a')
+	texfile = open(texfile_path, 'w')
 	texfile.write('% CXX!?\n')
 	texfile.write('\\newcommand{{\\{}Z{}Zruns}}{{{}}}\n'.format(compiler,module, runs))
 
