@@ -57,7 +57,7 @@ void mutate(char *str, size_t length, const char *base, double substitutions)
 	*str = '\0';
 }
 
-static void transversion_mutations(benchmark::State &state)
+static void transversions_mutations(benchmark::State &state)
 {
 	char *subject = static_cast<char *>(malloc(LENGTH + 1));
 	char *query = static_cast<char *>(malloc(LENGTH + 1));
@@ -65,16 +65,16 @@ static void transversion_mutations(benchmark::State &state)
 	gen(query, LENGTH, 8003);
 
 	while (state.KeepRunning()) {
-		auto mutations = transversion_mutations(subject, LENGTH, query);
+		auto mutations = transversions_mutations(subject, LENGTH, query);
 		escape(&mutations);
 	}
 
 	free(subject);
 	free(query);
 }
-BENCHMARK(transversion_mutations);
+BENCHMARK(transversions_mutations);
 
-static void transversion_mutations_length(benchmark::State &state)
+static void transversions_mutations_length(benchmark::State &state)
 {
 	char *subject = static_cast<char *>(malloc(LENGTH + 1));
 	char *query = static_cast<char *>(malloc(LENGTH + 1));
@@ -82,16 +82,16 @@ static void transversion_mutations_length(benchmark::State &state)
 	gen(query, LENGTH, 8003);
 
 	while (state.KeepRunning()) {
-		auto mutations = transversion_mutations_length(subject, LENGTH, query);
+		auto mutations = transversions_mutations_length(subject, LENGTH, query);
 		escape(&mutations);
 	}
 
 	free(subject);
 	free(query);
 }
-BENCHMARK(transversion_mutations_length);
+BENCHMARK(transversions_mutations_length);
 
-static void transversion_transversions(benchmark::State &state)
+static void transversions_transversions(benchmark::State &state)
 {
 	char *subject = static_cast<char *>(malloc(LENGTH + 1));
 	char *query = static_cast<char *>(malloc(LENGTH + 1));
@@ -100,16 +100,16 @@ static void transversion_transversions(benchmark::State &state)
 
 	while (state.KeepRunning()) {
 		size_t transversions =
-			transversion_transversions(subject, LENGTH, query);
+			transversions_transversions(subject, LENGTH, query);
 		escape(&transversions);
 	}
 
 	free(subject);
 	free(query);
 }
-BENCHMARK(transversion_transversions);
+BENCHMARK(transversions_transversions);
 
-static void transversion_twiddle(benchmark::State &state)
+static void transversions_twiddle(benchmark::State &state)
 {
 	char *subject = static_cast<char *>(malloc(LENGTH + 1));
 	char *query = static_cast<char *>(malloc(LENGTH + 1));
@@ -118,16 +118,16 @@ static void transversion_twiddle(benchmark::State &state)
 
 	while (state.KeepRunning()) {
 		size_t transversions =
-			transversion_twiddle_length(subject, LENGTH, query);
+			transversions_twiddle_length(subject, LENGTH, query);
 		escape(&transversions);
 	}
 
 	free(subject);
 	free(query);
 }
-BENCHMARK(transversion_twiddle);
+BENCHMARK(transversions_twiddle);
 
-static void transversion_builtin(benchmark::State &state)
+static void transversions_builtin(benchmark::State &state)
 {
 	char *subject = static_cast<char *>(malloc(LENGTH + 1));
 	char *query = static_cast<char *>(malloc(LENGTH + 1));
@@ -135,13 +135,13 @@ static void transversion_builtin(benchmark::State &state)
 	gen(query, LENGTH, 8003);
 
 	while (state.KeepRunning()) {
-		size_t transversions = transversion_builtin(subject, LENGTH, query);
+		size_t transversions = transversions_builtin(subject, LENGTH, query);
 		escape(&transversions);
 	}
 
 	free(subject);
 	free(query);
 }
-BENCHMARK(transversion_builtin);
+BENCHMARK(transversions_builtin);
 
 BENCHMARK_MAIN();

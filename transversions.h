@@ -1,4 +1,4 @@
-double transversion_mutations(const char *subject, size_t length,
+double transversions_mutations(const char *subject, size_t length,
 							  const char *query)
 {
 	size_t mutations = 0;
@@ -13,7 +13,7 @@ double transversion_mutations(const char *subject, size_t length,
 	return static_cast<double>(mutations) / length;
 }
 
-double transversion_mutations_length(const char *subject, size_t length,
+double transversions_mutations_length(const char *subject, size_t length,
 									 const char *query)
 {
 	size_t mutations = 0;
@@ -27,7 +27,7 @@ double transversion_mutations_length(const char *subject, size_t length,
 	return static_cast<double>(mutations) / length;
 }
 
-double transversion_transversions(const char *subject, size_t length,
+double transversions_transversions(const char *subject, size_t length,
 								  const char *query)
 {
 	static const auto is_purine = [](char c) { return c == 'A' || c == 'G'; };
@@ -45,7 +45,7 @@ double transversion_transversions(const char *subject, size_t length,
 	return static_cast<double>(transversions) / length;
 }
 
-double transversion_twiddle_length(const char *subject, size_t length,
+double transversions_twiddle_length(const char *subject, size_t length,
 								   const char *query)
 {
 	size_t transversions = 0;
@@ -59,7 +59,7 @@ double transversion_twiddle_length(const char *subject, size_t length,
 	return static_cast<double>(transversions) / length;
 }
 
-double transversion_builtin(const char *subject, size_t length,
+double transversions_builtin(const char *subject, size_t length,
 							const char *query)
 {
 	size_t transversions = 0;
