@@ -21,9 +21,9 @@ def main(module,runs,compiler):
 	matches = {}
 	for i in range (0, runs):
 		print(str(i), end=" ", flush=True)
-		cmd = './bench_{} 2> /dev/null'.format(module, i)
+		cmd = './bench_{} --color_print=false 2> /dev/null'.format(module, i)
 		string = os.popen(cmd).read()
-		strMeasurement = r'^({}_\w*)\s*\d* ns\s*(\d*)'.format(module)
+		strMeasurement = r'^({}_\w*)\s*\d*(?: ns)?\s*(\d*)'.format(module)
 		rMeasurement = re.compile(strMeasurement, re.M)
 		res = re.findall(rMeasurement, string)
 		for mes in res:
