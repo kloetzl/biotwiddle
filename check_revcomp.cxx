@@ -21,7 +21,7 @@ int main()
 	rev2 = revcomp_reverse(seq, LENGTH, rev2);
 	assert(strcmp(rev, rev2) == 0);
 
-	rev2 = revcomp_2case(seq, LENGTH, rev2);
+	rev2 = revcomp_twocase(seq, LENGTH, rev2);
 	assert(strcmp(rev, rev2) == 0);
 
 	rev2 = revcomp_twiddle(seq, LENGTH, rev2);
@@ -30,7 +30,7 @@ int main()
 	rev2 = revcomp_subtraction(seq, LENGTH, rev2);
 	assert(strcmp(rev, rev2) == 0);
 
-	rev2 = revcomp_2step(seq, LENGTH, rev2);
+	rev2 = revcomp_twostep(seq, LENGTH, rev2);
 	assert(strcmp(rev, rev2) == 0);
 
 	free(seq);

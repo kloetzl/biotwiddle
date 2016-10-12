@@ -38,7 +38,7 @@ static char *revcomp_reverse(const char *forward, size_t len, char *reverse)
 	return reverse;
 }
 
-static char *revcomp_2case(const char *forward, size_t len, char *reverse)
+static char *revcomp_twocase(const char *forward, size_t len, char *reverse)
 {
 	reverse[len] = '\0';
 
@@ -97,7 +97,7 @@ static char *revcomp_subtraction(const char *forward, size_t len, char *reverse)
 	return reverse;
 }
 
-static char *revcomp_2step(const char *forward, size_t len, char *reverse)
+static char *revcomp_twostep(const char *forward, size_t len, char *reverse)
 {
 	reverse[len] = '\0';
 

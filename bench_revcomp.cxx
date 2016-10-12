@@ -39,21 +39,21 @@ static void revcomp_reverse(benchmark::State &state)
 }
 BENCHMARK(revcomp_reverse);
 
-static void revcomp_2case(benchmark::State &state)
+static void revcomp_twocase(benchmark::State &state)
 {
 	char *forward = (char *)malloc(LENGTH + 1);
 	char *reverse = (char *)malloc(LENGTH + 1);
 	gen(forward, LENGTH);
 
 	while (state.KeepRunning()) {
-		revcomp_2case(forward, LENGTH, reverse);
+		revcomp_twocase(forward, LENGTH, reverse);
 		escape(reverse);
 	}
 
 	free(forward);
 	free(reverse);
 }
-BENCHMARK(revcomp_2case);
+BENCHMARK(revcomp_twocase);
 
 static void revcomp_twiddle(benchmark::State &state)
 {
@@ -87,20 +87,20 @@ static void revcomp_subtraction(benchmark::State &state)
 }
 BENCHMARK(revcomp_subtraction);
 
-static void revcomp_2step(benchmark::State &state)
+static void revcomp_twostep(benchmark::State &state)
 {
 	char *forward = (char *)malloc(LENGTH + 1);
 	char *reverse = (char *)malloc(LENGTH + 1);
 	gen(forward, LENGTH);
 
 	while (state.KeepRunning()) {
-		revcomp_2step(forward, LENGTH, reverse);
+		revcomp_twostep(forward, LENGTH, reverse);
 		escape(reverse);
 	}
 
 	free(forward);
 	free(reverse);
 }
-BENCHMARK(revcomp_2step);
+BENCHMARK(revcomp_twostep);
 
 BENCHMARK_MAIN();
