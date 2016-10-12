@@ -310,9 +310,41 @@ double transversions(const char *subject, size_t length, const char *query)
 
 To evaluate the performance of the given methods, we simulated sequences with 100{,}000 nucleotides. On each sequence a method is run often enough to gain statistical confidence using the benchmark library by Google (). This process is repeated a number of runs, from which the \emph{minimum} is chosen as the best run-time.
 
-\include{hash}
+\subsection*{GC-Content}
+\include{gccontent}
+
+\begin{figure}
+    \begin{tikzpicture}
+        \begin{axis}[
+            title={GC-Content},
+            ylabel={Runtime (ns)},
+            xtick=data,
+            xlabel={Method},
+            symbolic x coords={simple,twiddle},
+            ybar,
+            % restrict y to domain=200:1000000,
+            % unbounded coords=discard
+        ]
+
+            \addplot plot coordinates {
+                (simple, \gZgccontentZlength) (twiddle, \gZgccontentZlengthZtwiddle)
+            };
+            \addlegendentry{GCC}
+
+            \addplot plot coordinates {
+                (simple, \clangZgccontentZlength) (twiddle, \clangZgccontentZlengthZtwiddle)
+            };
+            \addlegendentry{Clang}
+
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Computing the GC-Content. Note the truncated y-axis.}
+\end{figure}
+
+
 
 \subsection*{Hashing}
+\include{hash}
 
 We subjected the two methods for hashing given above to performance tests. 
 
@@ -328,7 +360,7 @@ X   CXX    Method    Runtime
 
 \begin{semilogyaxis}[
 	title={Hashing},
-	ylabel={Runtime (ns)},
+	ylabel={Runtime (ms)},
 	xtick=data,
 	xticklabels from table={\datatable}{Method},
 	xlabel={Method},
@@ -354,9 +386,64 @@ X   CXX    Method    Runtime
 \caption{Runtime of different k-mer hashing procedures. Shown is the minimum of \gZhashZruns~runs.}
 \end{figure}
 
-
 \subsection*{Reverse Complement}
+\include{revcomp}
 
+\begin{figure}
+    \begin{tikzpicture}
+        \begin{semilogyaxis}[
+            title={Reverse Complement},
+            ylabel={Runtime (ns)},
+            xtick=data,
+            xlabel={Method},
+            symbolic x coords={simple,twiddle,subtraction, two step},
+            ybar
+        ]
+
+            \addplot plot coordinates {
+                (simple, \gZrevcompZsimple) (twiddle, \gZrevcompZtwiddle) (subtraction, \gZrevcompZsubtraction) (two step, \gZrevcompZtwostep)
+            };
+            \addlegendentry{GCC}
+
+            \addplot plot coordinates {
+                (simple, \clangZrevcompZsimple) (twiddle, \clangZrevcompZtwiddle) (subtraction, \clangZrevcompZsubtraction) (two step, \clangZrevcompZtwostep)
+            };
+            \addlegendentry{Clang}
+
+        \end{semilogyaxis}
+    \end{tikzpicture}
+    \caption{Runtime of different methods for computing the reverse complement. Shown is the minimum of \gZhashZruns~runs.}
+\end{figure}
+
+
+\subsection*{Transversions}
+\include{transversions}
+
+\begin{figure}
+    \begin{tikzpicture}
+        \begin{semilogyaxis}[
+            title={Transversions},
+            ylabel={Runtime (ns)},
+            xtick=data,
+            xlabel={Method},
+            symbolic x coords={mutations,transversions,twiddle},
+            ybar
+        ]
+
+            \addplot plot coordinates {
+                (mutations, \gZtransversionsZmutationsZlength) (twiddle, \gZtransversionsZtwiddle) (transversions, \gZtransversionsZtransversions)
+            };
+            \addlegendentry{GCC}
+
+            \addplot plot coordinates {
+                (mutations, \clangZtransversionsZmutationsZlength) (twiddle, \clangZtransversionsZtwiddle) (transversions, \clangZtransversionsZtransversions)
+            };
+            \addlegendentry{Clang}
+
+        \end{semilogyaxis}
+    \end{tikzpicture}
+    \caption{Runtime of different methods for computing the reverse complement. Shown is the minimum of \gZhashZruns~runs.}
+\end{figure}
 
 
 \section*{Acknowledgments}

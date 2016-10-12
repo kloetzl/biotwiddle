@@ -35,9 +35,16 @@ double transversions_transversions(const char *subject, size_t length,
 	size_t transversions = 0;
 	const char *sbj = subject, *qry = query;
 
-	for (; *sbj; sbj++, qry++) {
+	/*for (; *sbj; sbj++, qry++) {
 		if ((is_purine(*sbj) && !is_purine(*qry)) ||
 			(!is_purine(*sbj) && is_purine(*qry))) {
+			transversions++;
+		}
+	}*/
+
+	for (size_t k = 0; k < length; k++) {
+		if ((is_purine(subject[k]) && !is_purine(query[k])) ||
+			(!is_purine(subject[k]) && is_purine(query[k]))) {
 			transversions++;
 		}
 	}
