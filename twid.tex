@@ -1,0 +1,375 @@
+\documentclass[10pt,letterpaper]{article}
+\usepackage[top=0.85in,left=2.75in,footskip=0.75in,marginparwidth=2in]{geometry}
+\usepackage[utf8x]{inputenc}
+\usepackage{listings}
+\usepackage{nameref,hyperref}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+% clean citations
+\usepackage{cite}
+
+
+% line numbers
+\usepackage[right]{lineno}
+
+% improves typesetting in LaTeX % NOT SURE IF VALID
+\usepackage{microtype}
+% \DisableLigatures[f]{encoding = *, family = * }
+
+% text layout - change as needed
+\raggedright
+\setlength{\parindent}{0.5cm}
+\textwidth 5.25in 
+\textheight 8.75in
+
+% use adjustwidth environment to exceed text width (see examples in text)
+\usepackage{changepage}
+
+% adjust caption style
+\usepackage[aboveskip=1pt,labelfont=bf,labelsep=period,singlelinecheck=off]{caption}
+
+% remove brackets from references
+\makeatletter
+\renewcommand{\@biblabel}[1]{\quad#1.}
+\makeatother
+
+% headrule, footrule and page numbers
+\usepackage{lastpage,fancyhdr,graphicx}
+\usepackage{epstopdf}
+\pagestyle{myheadings}
+\pagestyle{fancy}
+\fancyhf{}
+\rfoot{\thepage/\pageref{LastPage}}
+\renewcommand{\footrule}{\hrule height 2pt \vspace{2mm}}
+\fancyheadoffset[L]{2.25in}
+\fancyfootoffset[L]{2.25in}
+
+\usepackage{color}
+
+% define custom colors (this one is for figure captions)
+\definecolor{Gray}{gray}{.25}
+
+% use if you want to put caption to the side of the figure - see example in text
+\usepackage{sidecap}
+
+% use for have text wrap around figures
+\usepackage{wrapfig}
+\usepackage[pscoord]{eso-pic}
+\usepackage[fulladjust]{marginnote}
+\reversemarginpar
+
+
+% document begins here
+\begin{document}
+\vspace*{0.35in}
+
+% title goes here:
+\begin{flushleft}
+{\Large
+\textbf\newline{Bit-twiddling on Nucleotides}
+}
+\newline
+% authors go here:
+\\
+Fabian Klötzl\textsuperscript{1,*}
+\\
+\bigskip
+\bf{1} MPI for Evolutionary Biology
+\\
+\bigskip
+* kloetzl@evolbio.mpg.de
+
+\end{flushleft}
+
+\section*{Abstract}
+Bits, nucleotides and speed.
+
+% now start line numbers
+\linenumbers
+
+% the * after section prevents numbering 
+\section*{Introduction}
+A lot of bioinformatics tools work with nucleotide data. Usually, each nucleotide is represented by one character in IUBUB nomenclature. For the four standard DNA bases these are \lstinline!A!, \lstinline!C!, \lstinline!G!, and \lstinline!T!. These letters are commenly encoded in ASCII and take up one byte of memory. Assuming a C memory model, a sequence of nucleotides is stored as a string; continous memory, with each byte representing one character delimited by a \lstinline!NUL!-byte.
+
+\section*{Materials and Methods}
+
+\subsection*{Definitions}
+
+An alphabet is a non-empty set of characters, commonly written as $\Sigma$. A finite sequence of characters $w = w_1 w_2 \ldots w_n$ with $w_i \in \Sigma$ is called a string with length $n = |w|$. In this article the alphabet is assumed to consist of the four nucleotides from DNA: $\Sigma = {A,C,G,T}$.
+
+Each character is also the representative for a seven bit sequence, namely their ASCII encoding. We allow the execution of bitwise logical operators on these sequences. Let $c$ and $d$ be two bit sequences. Then $c {\&} d$ is the result of the bitwise logical and ()
+
+
+\subsection*{GC-content}
+
+The GC-content of DNA is the proportion of guanin and cytosin among all nucleotides. Let $w$ be a DNA sequence of length $n$. Furthermore, $S\colon \Sigma \to \{0,1\}$ maps a nucleotide to $1$ iff it is a $C$ or $G$. So the GC-content of the sequence $w$ is $\sum_{i=1}^n S(w_i) / n$.
+
+This definition easily translates into code. For every character in the given string, check if it is \lstinline!C! or \lstinline!G!; if so, increase a counter. Once all characters are processed, compute the final ratio.
+
+\lstdefinestyle{algo}{
+    language=c,
+    mathescape=true,
+    columns=flexible,
+    identifierstyle=\emph,
+    inputencoding=utf8x,
+    tabsize=4,
+    % escapeinside={(*}{*)},
+    % numbers=left,
+    xleftmargin=2em,
+    % numberstyle=\scriptsize,
+    morekeywords=size_t
+}
+
+\lstset{style=algo}
+
+\begin{lstlisting}
+double gc(const char *seq) {  
+    size_t gc = 0;
+    const char *ptr = seq;
+
+    for (; *ptr; ptr++) {
+        if (*ptr == 'G' || *ptr == 'C') {
+            gc++;
+        }
+    }
+
+    return (double)gc / (ptr - seq);
+}
+\end{lstlisting}
+
+This looks like three comparisons are made against each character, one for \lstinline!NUL! and two against \lstinline!C! and \lstinline!G!. However, compilers can optimize them into just two comparisons. Luckily, in ASCII, \lstinline!C! and \lstinline!G! differ by only one bit. This enables optimizing compilers (or us) to rewrite the comparisons to use a bit mask. We ignore the bit which differs between \lstinline!C! and \lstinline!G! and check if the remaining bits equal the common bit pattern.
+
+\begin{lstlisting}
+double gc(const char *seq) {  
+    size_t gc = 0;
+    const char *ptr = seq;
+
+    for (; *ptr; ptr++) {
+    	char masked = *ptr & 'G' & 'C';
+        if ( masked == ('G' & 'C')) {
+            gc++;
+        }
+    }
+
+    return (double)gc / (ptr - seq);
+}
+\end{lstlisting}
+
+So bioinformatics got lucky that we use the GC-content not the AT-content.
+
+
+\subsection*{Hashing}
+
+A common procedure on k-mers is to hash them. This allows for compact representation in memory, or can be used as an index into hash-based data structures. As the DNA-alphabet consists of only four characters, two bits suffice to represent one nucleotide. With this we can define the following mapping for $k \ge |w|$.
+
+\begin{align*}
+	H(w, k) &= h(w_1) \cdot 4^{k} + h(w_2) \cdot 4^{k-1} + \cdots + h(w_k) \\
+	&= \sum_{i=1}^k h(w_i)\cdot 4^{k-i+1} \\
+	h(x) &=
+		\begin{cases}
+			0 & \text{if } x = \texttt{A} \\
+			1 & \text{if } x = \texttt{C} \\
+			2 & \text{if } x = \texttt{G} \\
+			3 & \text{if } x = \texttt{T}
+		\end{cases}
+\end{align*}
+
+Again, this definition easily translates into code: Iterate over the first $k$ characters of a string, compute the map, and combine them into one number.
+
+\begin{lstlisting}
+size_t hash(const char *seq, size_t k) {  
+    size_t return_value = 0;
+
+    while (k--) {
+    	char c = *seq++
+    	size_t val = 0;
+    	switch (c) {
+    		case 'A': val = 0; break;
+    		case 'C': val = 1; break;
+    		case 'G': val = 2; break;
+    		case 'T': val = 3; break;
+    	}
+    	return_value <<= 2;
+    	return_value |= val;
+    }
+
+    return return_value;
+}
+\end{lstlisting}
+
+The \lstinline!switch!-statement is obvious for humans to read, but not the most compact way to achieve the desired mapping. Instead of essentially doing four comparisons, we can resort to bit-twiddling, giving us the same mapping with less machine instructions.
+
+\begin{tabular}{ccc}
+	\toprule
+	Char & ASCII & bit code \\
+	\hline
+	A & 0x41 & 100\,0001 \\
+	C & 0x43 & 100\,0011 \\
+	G & 0x47 & 100\,0111 \\
+	T & 0x54 & 101\,0100 \\
+	\bottomrule
+\end{tabular}
+
+Remember, that the nucleotides are stored as ASCII characters in memory. The actual values are shown in Table~{}. In the table, it can be seen that the lower bits 2 and 3 of each character uniquely identify it. Further more, they almost achieve the desired mapping given as $h(x)$ above. However, if bit 3 is set (i.\,e. \lstinline!G! or \lstinline!T!) the bit 2 is wrong. Thus it needs to be flipped, conditionally. The latter can be achieved with a bitwise-exclusive-or as shown in the following code.
+
+\begin{lstlisting}
+size_t hash(const char *seq, size_t k) {  
+    size_t return_value = 0;
+
+    while (k--) {
+    	char c = *seq++;
+    	c &= 6;
+    	c ^= c >> 1;
+    	size_t val = c >> 1;
+    	return_value <<= 2;
+    	return_value |= val;
+    }
+
+    return return_value;
+}
+\end{lstlisting}
+
+Finally, we have achieved the mapping we set out for. In C, this code compiles down to just five bit-twiddling instructions, making it the fastest order-preserving method available. Furthermore, unlike the switch-statement, this code can be vectorized.
+
+
+\subsection*{Reverse Complement}
+
+With the inception of the DNA structure came the concept of the reverse complement. It describes the relationship between the two strands of DNA. For this article we use the following, technical, definition. Let $w\in \Sigma^*$ be a DNA sequence with $\bar w, |\bar w| = |w|$ being its reverse complement if its characters have the following property:
+
+\begin{align*}
+	\forall i\in[1,|w|]\colon \quad {\bar w}_{|w|-i-1} &=
+		\begin{cases}
+			\texttt{T} & \text{if } w_i = \texttt{A} \\
+			\texttt{G} & \text{if } w_i = \texttt{C} \\
+			\texttt{C} & \text{if } w_i = \texttt{G} \\
+			\texttt{A} & \text{if } w_i = \texttt{T}
+		\end{cases}
+\end{align*}
+
+A simple implementation for the reverse complement follows a similar scheme as the hashing procedure above. Iterate over all characters in the forward sequence, map everyone to its complement, and write the result to the reverse string.
+
+This time we focus our efforts on the complementing. Specifically, complementing a nucleotide can be compactly written as $\texttt{A} \leftrightarrow T$ and $C \leftrightarrow G$. Let $c$ be the nucleotide which we want to complement. Then the following is true $\bar c = \bar c \otimes 0 = \bar c \otimes (c \otimes c) = (\bar c \otimes c) \otimes c$, but also $c = (\bar c \otimes c) \otimes c$. So $c$ can be complemented back and forth with the same operation. Furthermore, $(\bar c \otimes c)$ simplifies to a constant value, reducing the complement to one machine instruction.
+
+So two magic constants suffice to complement all four nucleotides: $21 = (A \otimes T)$ and $4 = (C \otimes G)$. To pick the right constant for complementing, a trick, similar to the Hashing section above can be used; $C$ and $G$ have their bit 2 set, whereas $A$ and $T$ do not.
+
+
+\begin{lstlisting}
+char *revcomp(const char *forward, char *reverse, size_t len)
+{
+	for (size_t k = 0; k < len; k++) {
+		char c = forward[k];
+		char magic = c & 2 ? 4 : 21;
+
+		reverse[len - k - 1] = c ^ magic;
+	}
+
+	reverse[len] = '\0';
+	return reverse;
+}
+\end{lstlisting}
+
+This code is surprisingly short and could be compacted even further. It contains only one branch and very simple instructions, making it vectorizing-friendly.
+
+
+\subsection*{Mutations and Transversions}
+
+As a final task we focus our attention on comparing genomes, specifically, counting and classifying mutations. Given two genomes $s,q \in \Sigma^*$, with equal length, we are interested in the number of transversions separating the two sequences.
+
+\begin{align*}
+    \mathit{trans}(a,b) &= \sum_{i=1}^{|a|} \delta(a_i,b_i) \\
+    \delta(a,b) &= \begin{cases}
+        1 & \text{if } a \in \{C,T\} \text{ and } b \not\in \{C,T\} \\
+        1 & \text{if } b \in \{C,T\} \text{ and } a \not\in \{C,T\} \\
+        0 & \text{otherwise}
+    \end{cases}
+\end{align*}
+
+To account for a transversion, exactly one of the two bases has to be a pyrimidine, and the other purine. A character $c$ is a pyrimidine if $c + 1$ has a $1$ at bit 3. For purines that bit has the value $0$. So incrementing the characters by one allows for easy characterization of bases. With a bitwise-exclusive-or we can check if only one of the two bases is a pyrimidine.
+
+\begin{lstlisting}
+double transversions(const char *subject, size_t length, const char *query)
+{
+    size_t transversions = 0;
+
+    for (size_t k = 0; k < length; k++) {
+        if (((subject[k] + 1) ^ (query[k] + 1)) & 4) {
+            transversions++;
+        }
+    }
+
+    return (double)transversions / length;
+}
+\end{lstlisting}
+
+
+\section*{Results}
+
+To evaluate the performance of the given methods, we simulated sequences with 100{,}000 nucleotides. On each sequence a method is run often enough to gain statistical confidence using the benchmark library by Google (). This process is repeated a number of runs, from which the \emph{minimum} is chosen as the best run-time.
+
+\include{hash}
+
+\subsection*{Hashing}
+
+We subjected the two methods for hashing given above to performance tests. 
+
+
+\begin{figure}
+\begin{tikzpicture}
+\pgfplotstableread{
+X   CXX    Method    Runtime
+1   GCC    simple    271195
+2   GCC    twiddle   103733
+3   Bla    length  67
+}\datatable
+
+\begin{semilogyaxis}[
+	title={Hashing},
+	ylabel={Runtime (ns)},
+	xtick=data,
+	xticklabels from table={\datatable}{Method},
+	xlabel={Method},
+	% symbolic x coords={simple,twiddle},
+	ybar
+]
+
+% \addplot table [x=X, y=Runtime] {\datatable};
+% \addplot table [x=X, y=Runtime] {\datatable}; \addlegendentry{Clang}
+
+\addplot plot coordinates {
+	(1, \gZhashZsimple) (2, \gZhashZtwiddle) (3, \gZhashZtwiddleZlength)
+};
+\addlegendentry{GCC}
+
+\addplot plot coordinates {
+	(1, \clangZhashZsimple) (2, \clangZhashZtwiddle) (3, \clangZhashZtwiddleZlength)
+};
+\addlegendentry{Clang}
+
+\end{semilogyaxis}
+\end{tikzpicture}
+\caption{Runtime of different k-mer hashing procedures. Shown is the minimum of \gZhashZruns~runs.}
+\end{figure}
+
+
+\subsection*{Reverse Complement}
+
+
+
+\section*{Acknowledgments}
+Schlegel for the \LaTeX template %\cite{Schlegel2016}.
+
+\nolinenumbers
+
+%This is where your bibliography is generated. Make sure that your .bib file is actually called library.bib
+\bibliography{library}
+
+%This defines the bibliographies style. Search online for a list of available styles.
+\bibliographystyle{abbrv}
+
+\end{document}
+
+
