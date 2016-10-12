@@ -6,6 +6,7 @@ CHECKS = check_gccontent check_transversions check_hash check_revcomp
 EXECUTABLES = $(BENCHMARKS)	$(CHECKS)
 
 LOGFILE = log
+RUNS ?= 3
 
 .PHONY: all clean check format
 
