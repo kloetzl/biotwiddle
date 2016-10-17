@@ -63,6 +63,12 @@
 \reversemarginpar
 
 
+\include{gccontent}
+\include{hash}
+\include{revcomp}
+\include{transversions}
+
+
 % document begins here
 \begin{document}
 \vspace*{0.35in}
@@ -92,19 +98,20 @@ Bits, nucleotides and speed.
 \linenumbers
 
 % the * after section prevents numbering 
-\section*{Introduction}
+\section{Introduction}
 A lot of bioinformatics tools work with nucleotide data. Usually, each nucleotide is represented by one character in IUBUB nomenclature. For the four standard DNA bases these are \lstinline!A!, \lstinline!C!, \lstinline!G!, and \lstinline!T!. These letters are commenly encoded in ASCII and take up one byte of memory. Assuming a C memory model, a sequence of nucleotides is stored as a string; continous memory, with each byte representing one character delimited by a \lstinline!NUL!-byte.
 
-\section*{Materials and Methods}
+\section{Materials and Methods}
 
-\subsection*{Definitions}
+\subsection{Definitions}
 
 An alphabet is a non-empty set of characters, commonly written as $\Sigma$. A finite sequence of characters $w = w_1 w_2 \ldots w_n$ with $w_i \in \Sigma$ is called a string with length $n = |w|$. In this article the alphabet is assumed to consist of the four nucleotides from DNA: $\Sigma = {A,C,G,T}$.
 
 Each character is also the representative for a seven bit sequence, namely their ASCII encoding. We allow the execution of bitwise logical operators on these sequences. Let $c$ and $d$ be two bit sequences. Then $c {\&} d$ is the result of the bitwise logical and ()
 
 
-\subsection*{GC-content}
+\subsection{GC-content}
+\label{sec:gccontent}
 
 The GC-content of DNA is the proportion of guanin and cytosin among all nucleotides. Let $w$ be a DNA sequence of length $n$. Furthermore, $S\colon \Sigma \to \{0,1\}$ maps a nucleotide to $1$ iff it is a $C$ or $G$. So the GC-content of the sequence $w$ is $\sum_{i=1}^n S(w_i) / n$.
 
@@ -162,7 +169,8 @@ double gc(const char *seq) {
 So bioinformatics got lucky that we use the GC-content not the AT-content.
 
 
-\subsection*{Hashing}
+\subsection{Hashing}
+\label{sec:hash}
 
 A common procedure on k-mers is to hash them. This allows for compact representation in memory, or can be used as an index into hash-based data structures. As the DNA-alphabet consists of only four characters, two bits suffice to represent one nucleotide. With this we can define the following mapping for $k \ge |w|$.
 
@@ -236,9 +244,10 @@ size_t hash(const char *seq, size_t k) {
 Finally, we have achieved the mapping we set out for. In C, this code compiles down to just five bit-twiddling instructions, making it the fastest order-preserving method available. Furthermore, unlike the switch-statement, this code can be vectorized.
 
 
-\subsection*{Reverse Complement}
+\subsection{Reverse Complement}
+\label{sec:revcomp}
 
-With the inception of the DNA structure came the concept of the reverse complement. It describes the relationship between the two strands of DNA. For this article we use the following, technical, definition. Let $w\in \Sigma^*$ be a DNA sequence with $\bar w, |\bar w| = |w|$ being its reverse complement if its characters have the following property:
+With the inception of the DNA structure came the concept of the reverse complement. It describes the relationship between the two strands of DNA. For this article we use the following, technical, definition. Let $w\in \Sigma^*$ be a DNA sequence with $\bar w$ being its reverse complement if $|\bar w| = |w|$ and its characters have the following property:
 
 \begin{align*}
 	\forall i\in[1,|w|]\colon \quad {\bar w}_{|w|-i-1} &=
@@ -254,7 +263,7 @@ A simple implementation for the reverse complement follows a similar scheme as t
 
 This time we focus our efforts on the complementing. Specifically, complementing a nucleotide can be compactly written as $\texttt{A} \leftrightarrow T$ and $C \leftrightarrow G$. Let $c$ be the nucleotide which we want to complement. Then the following is true $\bar c = \bar c \otimes 0 = \bar c \otimes (c \otimes c) = (\bar c \otimes c) \otimes c$, but also $c = (\bar c \otimes c) \otimes c$. So $c$ can be complemented back and forth with the same operation. Furthermore, $(\bar c \otimes c)$ simplifies to a constant value, reducing the complement to one machine instruction.
 
-So two magic constants suffice to complement all four nucleotides: $21 = (A \otimes T)$ and $4 = (C \otimes G)$. To pick the right constant for complementing, a trick, similar to the Hashing section above can be used; $C$ and $G$ have their bit 2 set, whereas $A$ and $T$ do not.
+So two magic constants suffice to complement all four nucleotides: $21 = (A \otimes T)$ and $4 = (C \otimes G)$. To pick the right constant for complementing, a trick similar to the Hashing section above, can be used; $C$ and $G$ have their bit 2 set, whereas $A$ and $T$ do not.
 
 
 \begin{lstlisting}
@@ -272,10 +281,11 @@ char *revcomp(const char *forward, char *reverse, size_t len)
 }
 \end{lstlisting}
 
-This code is surprisingly short and could be compacted even further. It contains only one branch and very simple instructions, making it vectorizing-friendly.
+This code is surprisingly short and could be compacted even further. It contains only one branch and very simple instructions, making it fast and vectorizing-friendly.
 
 
-\subsection*{Mutations and Transversions}
+\subsection{Mutations and Transversions}
+\label{sec:transversions}
 
 As a final task we focus our attention on comparing genomes, specifically, counting and classifying mutations. Given two genomes $s,q \in \Sigma^*$, with equal length, we are interested in the number of transversions separating the two sequences.
 
@@ -288,7 +298,7 @@ As a final task we focus our attention on comparing genomes, specifically, count
     \end{cases}
 \end{align*}
 
-To account for a transversion, exactly one of the two bases has to be a pyrimidine, and the other purine. A character $c$ is a pyrimidine if $c + 1$ has a $1$ at bit 3. For purines that bit has the value $0$. So incrementing the characters by one allows for easy characterization of bases. With a bitwise-exclusive-or we can check if only one of the two bases is a pyrimidine.
+To account for a transversion, exactly one of the two bases has to be a pyrimidine, and the other purine. A character $c$ is a pyrimidine in ASCII if $c + 1$ has a $1$ at bit 3. For purines that bit has the value $0$. So incrementing the characters by one allows for easy characterization of bases. With a bitwise-exclusive-or we can check if only one of the two bases is a pyrimidine.
 
 \begin{lstlisting}
 double transversions(const char *subject, size_t length, const char *query)
@@ -306,24 +316,35 @@ double transversions(const char *subject, size_t length, const char *query)
 \end{lstlisting}
 
 
-\section*{Results}
+\section{Results}
 
 To evaluate the performance of the given methods, we simulated sequences with 100{,}000 nucleotides. On each sequence a method is run often enough to gain statistical confidence using the benchmark library by Google (). This process is repeated a number of runs, from which the \emph{minimum} is chosen as the best run-time.
 
-\subsection*{GC-Content}
-\include{gccontent}
+Also we inspect the runtime characteristics of different methods using the \textsc{perf} tools. These allow measuring the instructions per cycle, branches and other features of a program.
 
-\begin{figure}
+
+\subsection{GC-Content}
+{
+In Section~\ref{sec:gccontent} we figured out, how the gc-content of a sequence can be computed with
+
+\marginpar{
+\vspace{.7cm} % adjust vertical position relative to text with \vspace{} - note that you can enter negative numbers to move margin caption up
+\color{Gray} % this gives caption a grey color to set it apart from text body
+\textbf{Figure \ref{fig:gccontent}. Computing the GC-Content.} Note the truncated y-axis.
+}
+
+\begin{wrapfigure}[11]{l}{53mm}
     \begin{tikzpicture}
         \begin{axis}[
-            title={GC-Content},
+            width =5cm,
+            height=5cm,
+            enlarge x limits=.3,
+            % title={GC-Content},
             ylabel={Runtime (ns)},
             xtick=data,
             xlabel={Method},
             symbolic x coords={simple,twiddle},
-            ybar,
-            % restrict y to domain=200:1000000,
-            % unbounded coords=discard
+            ybar
         ]
 
             \addplot plot coordinates {
@@ -338,88 +359,98 @@ To evaluate the performance of the given methods, we simulated sequences with 10
 
         \end{axis}
     \end{tikzpicture}
-    \caption{Computing the GC-Content. Note the truncated y-axis.}
-\end{figure}
+    \captionsetup{labelformat=empty} % makes sure dummy caption is blank
+    \caption{}
+    \label{fig:gccontent}
+\end{wrapfigure}
+
+\noindent less comparisons than~necessary~at~first~glance. We created two methods, one representing the simple way of counting and the other the explicit twiddling way. As modern compilers optimize their output, we do not expect any significant difference between the two methods.
+
+Figure~\ref{fig:gccontent} shows the benchmarking results for the two methods. % As expected the methods are almost equally fast, even across compilers. 
+
+}
+
+\vspace*{2cm}
+\newpage{}
+\subsection{Hashing}
+
+We compare the two hashing procedures defined in Section~\ref{sec:hash}. One uses a big switch statement to map the nucleotides to an index. The other exploits the ASCII 
+
+\begin{wrapfigure}[16]{r}{65mm}
+    \begin{tikzpicture}
+        \begin{axis}[
+            width =5cm,
+            height=5cm,
+            enlarge x limits=.3,
+        	% title={Hashing},
+        	ylabel={Runtime (ns)},
+        	xtick=data,
+        	xlabel={Method},
+        	symbolic x coords={switch,twiddle},
+        	ybar
+        ]
+
+        \addplot plot coordinates {
+        	(switch, \gZhashZsimple) (twiddle, \gZhashZtwiddle)
+        };
+        \addlegendentry{GCC}
+
+        \addplot plot coordinates {
+        	(switch, \clangZhashZsimple) (twiddle, \clangZhashZtwiddle)
+        };
+        \addlegendentry{Clang}
+
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Runtime of different k-mer hashing procedures.}
+\end{wrapfigure}
+\noindent representation of the characters to achieve the same result, much faster. We measured the performance by having both methods compute the hash of all $k$-mers in a long sequence with $k = 16$.
+
+As we would have hoped, the twiddling method is faster, by a factor of 3. This is due to different reasons. The twiddle method utilizes more instruction-level parallelism. On an Intel Core i5-5200U the simple method executes about 1.19 instructions per cycle. However, using twiddling, that number can be ramped up to 3.75. On the contrary, the number of branches and especially the number of branch misses goes down. Whereas for the simple method 25\% of all branches are missed, it is only 0.02\% for twiddle.
 
 
+\subsection{Reverse Complement}
 
-\subsection*{Hashing}
-\include{hash}
+Here we compare four different ways of computing the reverse complement. As a baseline, again we use our simple switch-statement. twiddle is the method using xors as presented in Section~\ref{sec:revcomp}. A third method uses addition and subtraction instead of
 
-We subjected the two methods for hashing given above to performance tests. 
-
-
-\begin{figure}
-\begin{tikzpicture}
-\pgfplotstableread{
-X   CXX    Method    Runtime
-1   GCC    simple    271195
-2   GCC    twiddle   103733
-3   Bla    length  67
-}\datatable
-
-\begin{semilogyaxis}[
-	title={Hashing},
-	ylabel={Runtime (ms)},
-	xtick=data,
-	xticklabels from table={\datatable}{Method},
-	xlabel={Method},
-	% symbolic x coords={simple,twiddle},
-	ybar
-]
-
-% \addplot table [x=X, y=Runtime] {\datatable};
-% \addplot table [x=X, y=Runtime] {\datatable}; \addlegendentry{Clang}
-
-\addplot plot coordinates {
-	(1, \gZhashZsimple) (2, \gZhashZtwiddle) (3, \gZhashZtwiddleZlength)
-};
-\addlegendentry{GCC}
-
-\addplot plot coordinates {
-	(1, \clangZhashZsimple) (2, \clangZhashZtwiddle) (3, \clangZhashZtwiddleZlength)
-};
-\addlegendentry{Clang}
-
-\end{semilogyaxis}
-\end{tikzpicture}
-\caption{Runtime of different k-mer hashing procedures. Shown is the minimum of \gZhashZruns~runs.}
-\end{figure}
-
-\subsection*{Reverse Complement}
-\include{revcomp}
-
-\begin{figure}
+\begin{wrapfigure}{l}{85mm}
     \begin{tikzpicture}
         \begin{semilogyaxis}[
-            title={Reverse Complement},
+            width =8cm,
+            height=7cm,
+            enlarge x limits=.1,
+            % title={Reverse Complement},
             ylabel={Runtime (ns)},
             xtick=data,
             xlabel={Method},
-            symbolic x coords={simple,twiddle,subtraction, two step},
+            symbolic x coords={switch,twiddle,subtraction, two step},
             ybar
         ]
 
             \addplot plot coordinates {
-                (simple, \gZrevcompZsimple) (twiddle, \gZrevcompZtwiddle) (subtraction, \gZrevcompZsubtraction) (two step, \gZrevcompZtwostep)
+                (switch, \gZrevcompZsimple) (twiddle, \gZrevcompZtwiddle) (subtraction, \gZrevcompZsubtraction) (two step, \gZrevcompZtwostep)
             };
             \addlegendentry{GCC}
 
             \addplot plot coordinates {
-                (simple, \clangZrevcompZsimple) (twiddle, \clangZrevcompZtwiddle) (subtraction, \clangZrevcompZsubtraction) (two step, \clangZrevcompZtwostep)
+                (switch, \clangZrevcompZsimple) (twiddle, \clangZrevcompZtwiddle) (subtraction, \clangZrevcompZsubtraction) (two step, \clangZrevcompZtwostep)
             };
             \addlegendentry{Clang}
 
         \end{semilogyaxis}
     \end{tikzpicture}
     \caption{Runtime of different methods for computing the reverse complement. Shown is the minimum of \gZhashZruns~runs.}
-\end{figure}
+\end{wrapfigure}
+\noindent bitwise-exclusive-or. Lastly, one method (two step) splits the process into two parts. First, all nucleotides are complemented, then the string is reversed.
+
+It can be seen in Figure~{} that the switch method is by far the slowest. All other methods are up to two orders of magnitude faster. Among them the two step process is the slowest. Twiddling and subtraction have virtually identical runtimes. All results are the same across compilers.
 
 
-\subsection*{Transversions}
-\include{transversions}
 
-\begin{figure}
+
+\subsection{Transversions}
+
+\begin{wrapfigure}{r}{8cm}
     \begin{tikzpicture}
         \begin{semilogyaxis}[
             title={Transversions},
@@ -443,7 +474,7 @@ X   CXX    Method    Runtime
         \end{semilogyaxis}
     \end{tikzpicture}
     \caption{Runtime of different methods for computing the reverse complement. Shown is the minimum of \gZhashZruns~runs.}
-\end{figure}
+\end{wrapfigure}
 
 
 \section*{Acknowledgments}
