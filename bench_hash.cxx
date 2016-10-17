@@ -45,7 +45,7 @@ static void hash_twiddle_length(benchmark::State &state)
 	gen(forward, LENGTH);
 
 	while (state.KeepRunning()) {
-		for (char *kmer = forward; kmer < forward + LENGTH - K; kmer += K) {
+		for (char *kmer = forward; kmer < forward + LENGTH - K; kmer++) {
 			size_t hash = hash_twiddle_length(kmer, K);
 			escape(&hash);
 		}
