@@ -330,19 +330,19 @@ In Section~\ref{sec:gccontent} we figured out, how the gc-content of a sequence 
 \marginpar{
 \vspace{.7cm} % adjust vertical position relative to text with \vspace{} - note that you can enter negative numbers to move margin caption up
 \color{Gray} % this gives caption a grey color to set it apart from text body
-\textbf{Figure \ref{fig:gccontent}. Computing the GC-Content.} Note the truncated y-axis.
+\textbf{Figure \ref{fig:gccontent}. Computing the GC-Content.} Note the truncated y-axis. Todo: cut the y-axis.
 }
 
-\begin{wrapfigure}[11]{l}{53mm}
+\begin{wrapfigure}[12]{l}{53mm}
     \begin{tikzpicture}
-        \begin{axis}[
+        \begin{semilogyaxis}[
             width =5cm,
             height=5cm,
             enlarge x limits=.3,
             % title={GC-Content},
             ylabel={Runtime (ns)},
             xtick=data,
-            xlabel={Method},
+            % xlabel={Method},
             symbolic x coords={simple,twiddle},
             ybar
         ]
@@ -357,16 +357,17 @@ In Section~\ref{sec:gccontent} we figured out, how the gc-content of a sequence 
             };
             \addlegendentry{Clang}
 
-        \end{axis}
+        \end{semilogyaxis}
     \end{tikzpicture}
     \captionsetup{labelformat=empty} % makes sure dummy caption is blank
     \caption{}
     \label{fig:gccontent}
 \end{wrapfigure}
 
-\noindent less comparisons than~necessary~at~first~glance. We created two methods, one representing the simple way of counting and the other the explicit twiddling way. As modern compilers optimize their output, we do not expect any significant difference between the two methods.
+\noindent less comparisons than~necessary~at~first~glance. We created two methods, one representing the simple way of counting and the other the explicit twiddling way. As modern compilers optimize the generated code, we do not expect any significant difference between the two methods.
 
-Figure~\ref{fig:gccontent} shows the benchmarking results for the two methods. % As expected the methods are almost equally fast, even across compilers. 
+Figure~\ref{fig:gccontent} shows the benchmarking results for the two methods. 
+Using the GNU Compiler both methods are almost equally fast. However, Clang fails to optimize the simple method. It still makes one extra comparison leading to many more branches and thus a high number of branch misses. This leads to a roughly 25 times slower function.
 
 }
 
@@ -385,20 +386,20 @@ We compare the two hashing procedures defined in Section~\ref{sec:hash}. One use
         	% title={Hashing},
         	ylabel={Runtime (ns)},
         	xtick=data,
-        	xlabel={Method},
+        	% xlabel={Method},
         	symbolic x coords={switch,twiddle},
         	ybar
         ]
 
-        \addplot plot coordinates {
-        	(switch, \gZhashZsimple) (twiddle, \gZhashZtwiddle)
-        };
-        \addlegendentry{GCC}
+            \addplot plot coordinates {
+            	(switch, \gZhashZsimple) (twiddle, \gZhashZtwiddle)
+            };
+            \addlegendentry{GCC}
 
-        \addplot plot coordinates {
-        	(switch, \clangZhashZsimple) (twiddle, \clangZhashZtwiddle)
-        };
-        \addlegendentry{Clang}
+            \addplot plot coordinates {
+            	(switch, \clangZhashZsimple) (twiddle, \clangZhashZtwiddle)
+            };
+            \addlegendentry{Clang}
 
         \end{axis}
     \end{tikzpicture}
@@ -413,6 +414,11 @@ As we would have hoped, the twiddling method is faster, by a factor of 3. This i
 
 Here we compare four different ways of computing the reverse complement. As a baseline, again we use our simple switch-statement. twiddle is the method using xors as presented in Section~\ref{sec:revcomp}. A third method uses addition and subtraction instead of
 
+\marginpar{
+\vspace{.7cm} % adjust vertical position relative to text with \vspace{} - note that you can enter negative numbers to move margin caption up
+\color{Gray} % this gives caption a grey color to set it apart from text body
+\textbf{Figure \ref{fig:gccontent}. Reverse Complement.} Runtime of different methods for computing the reverse complement of a sequence with 100{,}000 nucleotides.
+}
 \begin{wrapfigure}{l}{85mm}
     \begin{tikzpicture}
         \begin{semilogyaxis}[
@@ -422,7 +428,7 @@ Here we compare four different ways of computing the reverse complement. As a ba
             % title={Reverse Complement},
             ylabel={Runtime (ns)},
             xtick=data,
-            xlabel={Method},
+            % xlabel={Method},
             symbolic x coords={switch,twiddle,subtraction, two step},
             ybar
         ]
@@ -439,7 +445,9 @@ Here we compare four different ways of computing the reverse complement. As a ba
 
         \end{semilogyaxis}
     \end{tikzpicture}
-    \caption{Runtime of different methods for computing the reverse complement. Shown is the minimum of \gZhashZruns~runs.}
+    \captionsetup{labelformat=empty} % makes sure dummy caption is blank
+    \caption{}
+    \label{fig:revcomp}
 \end{wrapfigure}
 \noindent bitwise-exclusive-or. Lastly, one method (two step) splits the process into two parts. First, all nucleotides are complemented, then the string is reversed.
 
