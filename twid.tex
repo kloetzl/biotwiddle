@@ -411,13 +411,13 @@ As we would have hoped, the twiddling method is faster, by a factor of 3. This i
 
 
 \subsection{Reverse Complement}
-
+{
 Here we compare four different ways of computing the reverse complement. As a baseline, again we use our simple switch-statement. twiddle is the method using xors as presented in Section~\ref{sec:revcomp}. A third method uses addition and subtraction instead of
 
 \marginpar{
 \vspace{.7cm} % adjust vertical position relative to text with \vspace{} - note that you can enter negative numbers to move margin caption up
 \color{Gray} % this gives caption a grey color to set it apart from text body
-\textbf{Figure \ref{fig:gccontent}. Reverse Complement.} Runtime of different methods for computing the reverse complement of a sequence with 100{,}000 nucleotides.
+\textbf{Figure \ref{fig:revcomp}. Reverse Complement.} Runtime of different methods for computing the reverse complement of a sequence with 100{,}000 nucleotides.
 }
 \begin{wrapfigure}{l}{85mm}
     \begin{tikzpicture}
@@ -453,18 +453,30 @@ Here we compare four different ways of computing the reverse complement. As a ba
 
 It can be seen in Figure~{} that the switch method is by far the slowest. All other methods are up to two orders of magnitude faster. Among them the two step process is the slowest. Twiddling and subtraction have virtually identical runtimes. All results are the same across compilers.
 
+}
 
-
-
+\newpage
 \subsection{Transversions}
 
-\begin{wrapfigure}{r}{8cm}
+{
+To compare the performance of different ways of counting transversions, we simply
+
+\marginpar{
+    \vspace{.7cm}
+    \color{Gray}
+    \textbf{Figure \ref{fig:transversions}. Counting Transversions.} Runtime of different methods for counting mutations and transversions. Shown is the minimum of \gZhashZruns~runs.
+}
+
+\begin{wrapfigure}{l}{65mm}
     \begin{tikzpicture}
         \begin{semilogyaxis}[
+            width=6cm,
+            height=6cm,
             title={Transversions},
             ylabel={Runtime (ns)},
             xtick=data,
-            xlabel={Method},
+            enlarge x limits=.3,
+            % xlabel={Method},
             symbolic x coords={mutations,transversions,twiddle},
             ybar
         ]
@@ -481,12 +493,18 @@ It can be seen in Figure~{} that the switch method is by far the slowest. All ot
 
         \end{semilogyaxis}
     \end{tikzpicture}
-    \caption{Runtime of different methods for computing the reverse complement. Shown is the minimum of \gZhashZruns~runs.}
+    \captionsetup{labelformat=empty}
+    \caption{}
+    \label{fig:transversions}
 \end{wrapfigure}
+\noindent choose counting mutations as a baseline.
 
+The~simple~way~of~counting transversions~cannot be vectorized and thus is about ten times slower than counting only mutations. However, the new twiddling method presented in Section~\ref{sec:transversions} can be vectorized, an thus is almost as the first method.
 
-\section*{Acknowledgments}
-Schlegel for the \LaTeX template %\cite{Schlegel2016}.
+}
+
+% \section*{Acknowledgments}
+% Schlegel for the \LaTeX template %\cite{Schlegel2016}.
 
 \nolinenumbers
 
