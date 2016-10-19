@@ -14,41 +14,50 @@ LOGFILE = log
 RUNS ?= 3
 
 
-.PHONY: all clean clean_binary check format bench_clang bench_gcc
+.PHONY: all clean clean_binary check format
 
 all: twid.pdf
 
-twid.pdf: twid.tex bench_gcc bench_clang $(TEX)
+twid.pdf: twid.tex $(TEX) $(BENCH_CLANG) $(BENCH_GCC)
 	pdflatex $<
 	evince $@ &
-
-bench_clang: CXX=clang++
-bench_clang: clean_binary $(BENCH_CLANG)
-
-bench_gcc: CXX=g++
-bench_gcc: clean_binary $(BENCH_GCC)
 
 %.tex: %.g %.clang
 	cat $^ > $@
 
-%.g: driver.py | check_% bench_%
-	if [ $(CXX) != "g++" ]; then exit 1 ; fi
+%.g: driver.py bench_%.g check_%
 	./driver.py -r $(RUNS) -c "g++" -m $(*F)
 
-%.clang: driver.py | check_% bench_%
-	if [ $(CXX) != "clang++" ]; then exit 1 ; fi
+%.clang: driver.py bench_%.clang check_%
 	./driver.py -r $(RUNS) -c "clang++" -m $(*F)
+
+
+%.clang.o: %.cxx
+	clang++ $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $^
+
+%.g.o: %.cxx
+	g++ $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $^
 
 %.o: %.cxx
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $^
 
-bench_revcomp: bench_revcomp.o
-bench_hash: bench_hash.o
-bench_gccontent: bench_gccontent.o
-bench_transversions: bench_transversions.o
+bench_revcomp.clang: bench_revcomp.clang.o
+bench_hash.clang: bench_hash.clang.o
+bench_gccontent.clang: bench_gccontent.clang.o
+bench_transversions.clang: bench_transversions.clang.o
 
-$(BENCHMARKS):
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread
+bench_revcomp.g: bench_revcomp.g.o
+bench_hash.g: bench_hash.g.o
+bench_gccontent.g: bench_gccontent.g.o
+bench_transversions.g: bench_transversions.g.o
+
+
+bench_revcomp.clang bench_hash.clang bench_gccontent.clang bench_transversions.clang:
+	clang++ $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread
+
+bench_revcomp.g bench_hash.g bench_gccontent.g bench_transversions.g:
+	g++ $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread
+
 
 check_gccontent: check_gccontent.o
 check_transversions: check_transversions.o

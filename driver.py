@@ -21,7 +21,7 @@ def main(module,runs,compiler):
 	matches = {}
 	for i in range (0, runs):
 		print(str(i), end=" ", flush=True)
-		cmd = './bench_{} --color_print=false 2> /dev/null'.format(module, i)
+		cmd = './bench_{}.{} --color_print=false 2> /dev/null'.format(module, compiler)
 		string = os.popen(cmd).read()
 		strMeasurement = r'^({}_\w*)\s*\d*(?: ns)?\s*(\d*)'.format(module)
 		rMeasurement = re.compile(strMeasurement, re.M)
