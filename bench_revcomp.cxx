@@ -23,6 +23,22 @@ static void revcomp_simple(benchmark::State &state)
 }
 BENCHMARK(revcomp_simple);
 
+static void revcomp_table(benchmark::State &state)
+{
+	char *forward = (char *)malloc(LENGTH + 1);
+	char *reverse = (char *)malloc(LENGTH + 1);
+	gen(forward, LENGTH);
+
+	while (state.KeepRunning()) {
+		revcomp_table(forward, LENGTH, reverse);
+		escape(reverse);
+	}
+
+	free(forward);
+	free(reverse);
+}
+BENCHMARK(revcomp_table);
+
 static void revcomp_reverse(benchmark::State &state)
 {
 	char *forward = (char *)malloc(LENGTH + 1);

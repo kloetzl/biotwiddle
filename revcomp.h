@@ -18,6 +18,23 @@ static char *revcomp_simple(const char *forward, size_t len, char *reverse)
 	return reverse;
 }
 
+static char *revcomp_table(const char *forward, size_t len, char *reverse)
+{
+	static /*constexpr*/ char table[127];
+	table['A'] = 'T';
+	table['T'] = 'A';
+	table['G'] = 'C';
+	table['C'] = 'G';
+
+	reverse[len] = '\0';
+
+	for (size_t k = 0; k < len; k++) {
+		reverse[len - k - 1] = table[forward[k]];
+	}
+
+	return reverse;
+}
+
 static char *revcomp_reverse(const char *forward, size_t len, char *reverse)
 {
 	reverse[len] = '\0';
