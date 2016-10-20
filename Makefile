@@ -3,7 +3,7 @@ TEX= hash.tex gccontent.tex revcomp.tex transversions.tex
 BENCH_GCC = $(TEX:.tex=.g)
 BENCH_CLANG = $(TEX:.tex=.clang)
 
-CPPFLAGS = -Wall -Wextra -std=c++14
+CPPFLAGS = -Wall -Wextra -std=gnu++14
 CXXFLAGS += -O3 -g -march=native -ftree-vectorize
 
 BENCHMARKS = bench_revcomp bench_hash bench_gccontent bench_transversions
@@ -18,9 +18,16 @@ RUNS ?= 3
 
 all: twid.pdf
 
-twid.pdf: twid.tex $(TEX) $(BENCH_CLANG) $(BENCH_GCC)
+twid.pdf: twid.tex twid.bbl $(TEX) $(BENCH_CLANG) $(BENCH_GCC)
 	pdflatex $<
 	evince $@ &
+
+twid.aux: twid.tex
+	pdflatex $<
+
+twid.bbl: twid.aux
+	bibtex twid
+
 
 %.tex: %.g %.clang
 	cat $^ > $@
