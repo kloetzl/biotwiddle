@@ -34,7 +34,7 @@
 
 % remove brackets from references
 \makeatletter
-\renewcommand{\@biblabel}[1]{\quad#1.}
+% \renewcommand{\@biblabel}[1]{\quad#1.}
 \makeatother
 
 % headrule, footrule and page numbers
@@ -88,34 +88,39 @@ Fabian Klötzl\textsuperscript{1,*}
 \\
 \bigskip
 * kloetzl@evolbio.mpg.de
-
+\\
+\today
 \end{flushleft}
 
 \section*{Abstract}
 Bits, nucleotides and speed.
 
-% now start line numbers
 \linenumbers
 
-% the * after section prevents numbering 
+
 \section{Introduction}
-A lot of bioinformatics tools work with nucleotide data. Usually, each nucleotide is represented by one character in IUBUB nomenclature. For the four standard DNA bases these are \lstinline!A!, \lstinline!C!, \lstinline!G!, and \lstinline!T!. These letters are commenly encoded in ASCII and take up one byte of memory. Assuming a C memory model, a sequence of nucleotides is stored as a string; continous memory, with each byte representing one character delimited by a \lstinline!NUL!-byte.
+
+Analyzing sequence data is one of the main focuses of bioinformatics. In this note we shall analyze four common tasks: computing the GC-content, hashing k-mers, computing the reverse complement and counting transversions. We present improved algorithms that show superior performance compared to naïve approaches.
+
+The sources of this paper including \LaTeX\ and program code are available at \url{https://github.com/kloetzl/biotwiddle}.
 
 \section{Materials and Methods}
 
+A lot of bioinformatics tools work with nucleotide data. Usually, each nucleotide is represented by one character in IUBUB nomenclature. For the four standard DNA bases these are \texttt{A}, \texttt{C}, \texttt{G}, and \texttt{T}. These letters are commonly encoded in ASCII and take up one byte of memory. Assuming a C memory model, a sequence of nucleotides is stored as a string, continuous memory, with each byte representing one character delimited by a \texttt{NUL}-byte.
+
 \subsection{Definitions}
 
-An alphabet is a non-empty set of characters, commonly written as $\Sigma$. A finite sequence of characters $w = w_1 w_2 \ldots w_n$ with $w_i \in \Sigma$ is called a string with length $n = |w|$. In this article the alphabet is assumed to consist of the four nucleotides from DNA: $\Sigma = {A,C,G,T}$.
+An alphabet is a non-empty set of characters, commonly written as $\Sigma$. A finite sequence of characters $w = w_1 w_2 \ldots w_n$ with $w_i \in \Sigma$ is called a string with length $n = |w|$. In this note the alphabet is assumed to consist of the four nucleotides from DNA: $\Sigma = \{\texttt{A},\texttt{C},\texttt{G},\texttt{T}\}$.
 
-Each character is also the representative for a seven bit sequence, namely their ASCII encoding. We allow the execution of bitwise logical operators on these sequences. Let $c$ and $d$ be two bit sequences. Then $c {\&} d$ is the result of the bitwise logical and ()
+Each character is also the representative for a seven bit sequence, namely their ASCII encoding. We allow the execution of bitwise logical operators on these sequences. For example, let $c$ and $d$ be two bit sequences. Then $c \mathbin{\&} d$ is the result of a bitwise-logical-and.
 
 
 \subsection{GC-content}
 \label{sec:gccontent}
 
-The GC-content of DNA is the proportion of guanin and cytosin among all nucleotides. Let $w$ be a DNA sequence of length $n$. Furthermore, $S\colon \Sigma \to \{0,1\}$ maps a nucleotide to $1$ iff it is a $C$ or $G$. So the GC-content of the sequence $w$ is $\sum_{i=1}^n S(w_i) / n$.
+The GC-content of DNA is the proportion of guanin and cytosin among all nucleotides. Let $w$ be a DNA sequence of length $n$. Furthermore, $S\colon \Sigma \to \{0,1\}$ maps a nucleotide to $1$ iff it is a $\texttt{C}$ or $\texttt{G}$. So the GC-content of the sequence $w$ is $\sum_{i=1}^n S(w_i) / n$.
 
-This definition easily translates into code. For every character in the given string, check if it is \lstinline!C! or \lstinline!G!; if so, increase a counter. Once all characters are processed, compute the final ratio.
+This definition easily translates into code. For every character in the given string, check if it is \texttt{C} or \texttt{G}; if so, increase a counter. Once all characters are processed, compute the final ratio.
 
 \lstdefinestyle{algo}{
     language=c,
@@ -148,7 +153,7 @@ double gc(const char *seq) {
 }
 \end{lstlisting}
 
-This looks like three comparisons are made against each character, one for \lstinline!NUL! and two against \lstinline!C! and \lstinline!G!. However, compilers can optimize them into just two comparisons. Luckily, in ASCII, \lstinline!C! and \lstinline!G! differ by only one bit. This enables optimizing compilers (or us) to rewrite the comparisons to use a bit mask. We ignore the bit which differs between \lstinline!C! and \lstinline!G! and check if the remaining bits equal the common bit pattern.
+This looks like three comparisons are made against each character, one for \texttt{NUL} and two against \texttt{C} and \texttt{G}. However, compilers can optimize them into just two comparisons. Luckily, in ASCII, \texttt{C} and \texttt{G} differ by only one bit. This enables optimizing compilers (or us) to rewrite the comparisons to use a bit mask. We ignore the bit which differs between \texttt{C} and \texttt{G} and check if the remaining bits equal the common bit pattern.
 
 \begin{lstlisting}
 double gc(const char *seq) {  
@@ -166,7 +171,7 @@ double gc(const char *seq) {
 }
 \end{lstlisting}
 
-So bioinformatics got lucky that we use the GC-content not the AT-content.
+As most sequence data is encoded as ASCII, computing the GC-content the new way may result in great performance benefits for a whole lot of bioinformatics applications.
 
 
 \subsection{Hashing}
@@ -177,6 +182,8 @@ A common procedure on k-mers is to hash them. This allows for compact representa
 \begin{align*}
 	H(w, k) &= h(w_1) \cdot 4^{k} + h(w_2) \cdot 4^{k-1} + \cdots + h(w_k) \\
 	&= \sum_{i=1}^k h(w_i)\cdot 4^{k-i+1} \\
+\end{align*}
+\begin{align*}
 	h(x) &=
 		\begin{cases}
 			0 & \text{if } x = \texttt{A} \\
@@ -209,20 +216,25 @@ size_t hash(const char *seq, size_t k) {
 }
 \end{lstlisting}
 
-The \lstinline!switch!-statement is obvious for humans to read, but not the most compact way to achieve the desired mapping. Instead of essentially doing four comparisons, we can resort to bit-twiddling, giving us the same mapping with less machine instructions.
+The \lstinline!switch!-statement is convenient for humans to read, but not the most compact way to achieve the desired mapping. Instead of essentially doing four comparisons, we can resort to bit-twiddling, giving us the same mapping with fewer machine instructions.
 
+\marginpar{
+\vspace{.7cm}
+\textbf{Table 1.} ASCII Table (excerpt)
+% \vspace{5cm}
 \begin{tabular}{ccc}
-	\toprule
-	Char & ASCII & bit code \\
-	\hline
-	A & 0x41 & 100\,0001 \\
-	C & 0x43 & 100\,0011 \\
-	G & 0x47 & 100\,0111 \\
-	T & 0x54 & 101\,0100 \\
-	\bottomrule
+    \toprule
+    Char & ASCII & bit code \\
+    \hline
+    A & 0x41 & 100\,0001 \\
+    C & 0x43 & 100\,0011 \\
+    G & 0x47 & 100\,0111 \\
+    T & 0x54 & 101\,0100 \\
+    \bottomrule
 \end{tabular}
+}
 
-Remember, that the nucleotides are stored as ASCII characters in memory. The actual values are shown in Table~{}. In the table, it can be seen that the lower bits 2 and 3 of each character uniquely identify it. Further more, they almost achieve the desired mapping given as $h(x)$ above. However, if bit 3 is set (i.\,e. \lstinline!G! or \lstinline!T!) the bit 2 is wrong. Thus it needs to be flipped, conditionally. The latter can be achieved with a bitwise-exclusive-or as shown in the following code.
+Remember, the nucleotides are stored as ASCII characters in memory. The actual values are shown in the table above. In the table, it can be seen that the lower bits 2 and 3 of each character uniquely identify it \cite{up2bit}. Further more, they almost achieve the desired mapping given as $h(x)$ above. However, if bit 3 is set (i.\,e. \texttt{G} or \texttt{T}) the bit 2 is wrong. Thus it needs to be flipped conditionally using a bitwise-exclusive-or as shown in the following code.
 
 \begin{lstlisting}
 size_t hash(const char *seq, size_t k) {  
@@ -247,7 +259,9 @@ Finally, we have achieved the mapping we set out for. In C, this code compiles d
 \subsection{Reverse Complement}
 \label{sec:revcomp}
 
-With the inception of the DNA structure came the concept of the reverse complement. It describes the relationship between the two strands of DNA. For this article we use the following, technical, definition. Let $w\in \Sigma^*$ be a DNA sequence with $\bar w$ being its reverse complement if $|\bar w| = |w|$ and its characters have the following property:
+DNA consists of a forward and a reverse complement strain. For this note we use the following, technical, definition. Let $w\in \Sigma^*$ be a DNA sequence with $\bar w$ being its reverse complement, given
+
+% if $|\bar w| = |w|$ and its characters have the following property:
 
 \begin{align*}
 	\forall i\in[1,|w|]\colon \quad {\bar w}_{|w|-i-1} &=
@@ -261,9 +275,9 @@ With the inception of the DNA structure came the concept of the reverse compleme
 
 A simple implementation for the reverse complement follows a similar scheme as the hashing procedure above. Iterate over all characters in the forward sequence, map everyone to its complement, and write the result to the reverse string.
 
-This time we focus our efforts on the complementing. Specifically, complementing a nucleotide can be compactly written as $\texttt{A} \leftrightarrow T$ and $C \leftrightarrow G$. Let $c$ be the nucleotide which we want to complement. Then the following is true $\bar c = \bar c \otimes 0 = \bar c \otimes (c \otimes c) = (\bar c \otimes c) \otimes c$, but also $c = (\bar c \otimes c) \otimes c$. So $c$ can be complemented back and forth with the same operation. Furthermore, $(\bar c \otimes c)$ simplifies to a constant value, reducing the complement to one machine instruction.
+This time we focus our efforts on the complementing. Specifically, complementing a nucleotide can be compactly written as $\texttt{A} \leftrightarrow \texttt{T}$ and $\texttt{C} \leftrightarrow \texttt{G}$. Let $c$ be the nucleotide to be complemented. Then the following is true $\bar c = \bar c \otimes 0 = \bar c \otimes (c \otimes c) = (\bar c \otimes c) \otimes c$, but also $c = (\bar c \otimes c) \otimes c$. So $c$ can be complemented back and forth with the same operation. Furthermore, $(\bar c \otimes c)$ simplifies to a constant value, reducing the complement to one machine instruction.
 
-So two magic constants suffice to complement all four nucleotides: $21 = (A \otimes T)$ and $4 = (C \otimes G)$. To pick the right constant for complementing, a trick similar to the Hashing section above, can be used; $C$ and $G$ have their bit 2 set, whereas $A$ and $T$ do not.
+So two magic constants suffice to complement all four nucleotides: $21 = (\texttt{A} \otimes \texttt{T})$ and $4 = (\texttt{C} \otimes \texttt{G})$. To pick the right constant for complementing, a trick similar that is in the hashing section above, can be used; $\texttt{C}$ and $\texttt{G}$ have their bit 2 set, whereas $\texttt{A}$ and $\texttt{T}$ do not.
 
 
 \begin{lstlisting}
@@ -292,8 +306,8 @@ As a final task we focus our attention on comparing genomes, specifically, count
 \begin{align*}
     \mathit{trans}(a,b) &= \sum_{i=1}^{|a|} \delta(a_i,b_i) \\
     \delta(a,b) &= \begin{cases}
-        1 & \text{if } a \in \{C,T\} \text{ and } b \not\in \{C,T\} \\
-        1 & \text{if } b \in \{C,T\} \text{ and } a \not\in \{C,T\} \\
+        1 & \text{if } a \in \{\texttt{C},\texttt{T}\} \text{ and } b \not\in \{\texttt{C},\texttt{T}\} \\
+        1 & \text{if } b \in \{\texttt{C},\texttt{T}\} \text{ and } a \not\in \{\texttt{C},\texttt{T}\} \\
         0 & \text{otherwise}
     \end{cases}
 \end{align*}
@@ -318,19 +332,19 @@ double transversions(const char *subject, size_t length, const char *query)
 
 \section{Results}
 
-To evaluate the performance of the given methods, we simulated sequences with 100{,}000 nucleotides. On each sequence a method is run often enough to gain statistical confidence using the benchmark library by Google (). This process is repeated a number of runs, from which the \emph{minimum} is chosen as the best run-time.
+To evaluate the performance of the given methods, we simulated sequences with 100{,}000 nucleotides. On each sequence a method is run often enough to gain statistical confidence using the benchmark library by Google \cite{bench}. This process is repeated a number of runs, from which the \emph{minimum} is chosen as the best run-time \cite{min}.
 
-Also we inspect the runtime characteristics of different methods using the \textsc{perf} tools. These allow measuring the instructions per cycle, branches and other features of a program.
+Also, we inspect the runtime characteristics of different methods using the \textsc{perf} tools \cite{perf}. These allow measuring the instructions per cycle, branches and other features of a program.
 
 
 \subsection{GC-Content}
 {
-In Section~\ref{sec:gccontent} we figured out, how the gc-content of a sequence can be computed with
+In Section~\ref{sec:gccontent} we describe, how the GC-content of a sequence can be computed with
 
 \marginpar{
 \vspace{.7cm} % adjust vertical position relative to text with \vspace{} - note that you can enter negative numbers to move margin caption up
 \color{Gray} % this gives caption a grey color to set it apart from text body
-\textbf{Figure \ref{fig:gccontent}. Computing the GC-Content.} Note the truncated y-axis. Todo: cut the y-axis.
+\textbf{Figure \ref{fig:gccontent}. Computing the GC-Content.} Runtimes of different methods to determine the GC-content from from sequences with 100{,}000 nucleotides. \textbf{Todo}: fix the y-axis.
 }
 
 \begin{wrapfigure}[12]{l}{53mm}
@@ -364,7 +378,7 @@ In Section~\ref{sec:gccontent} we figured out, how the gc-content of a sequence 
     \label{fig:gccontent}
 \end{wrapfigure}
 
-\noindent less comparisons than~necessary~at~first~glance. We created two methods, one representing the simple way of counting and the other the explicit twiddling way. As modern compilers optimize the generated code, we do not expect any significant difference between the two methods.
+\noindent fewer comparisons than~necessary~at~first~glance. We created two methods, one representing the simple way of counting and the other the explicit twiddling way. As modern compilers optimize the generated code, we do not expect any significant difference between the two methods.
 
 Figure~\ref{fig:gccontent} shows the benchmarking results for the two methods. 
 Using the GNU Compiler both methods are almost equally fast. However, Clang fails to optimize the simple method. It still makes one extra comparison leading to many more branches and thus a high number of branch misses. This leads to a roughly 25 times slower function.
@@ -412,34 +426,36 @@ As we would have hoped, the twiddling method is faster, by a factor of 3. This i
 
 \subsection{Reverse Complement}
 {
-Here we compare four different ways of computing the reverse complement. As a baseline, again we use our simple switch-statement. twiddle is the method using xors as presented in Section~\ref{sec:revcomp}. A third method uses addition and subtraction instead of
+Here we compare four different ways of computing the reverse complement. As a baseline, again we use our simple switch-statement. twiddle is the method using xors as presented in Section~\ref{sec:revcomp}. A third method used by programs such as \textsc{Blast} and
+
+% A third method uses addition and subtraction instead of
 
 \marginpar{
 \vspace{.7cm} % adjust vertical position relative to text with \vspace{} - note that you can enter negative numbers to move margin caption up
 \color{Gray} % this gives caption a grey color to set it apart from text body
 \textbf{Figure \ref{fig:revcomp}. Reverse Complement.} Runtime of different methods for computing the reverse complement of a sequence with 100{,}000 nucleotides.
 }
-\begin{wrapfigure}{l}{85mm}
+\begin{wrapfigure}{l}{75mm}
     \begin{tikzpicture}
         \begin{semilogyaxis}[
-            width =8cm,
+            width =7cm,
             height=7cm,
-            enlarge x limits=.1,
+            enlarge x limits=.2,
             % title={Reverse Complement},
             ylabel={Runtime (ns)},
             xtick=data,
             % xlabel={Method},
-            symbolic x coords={switch,twiddle,subtraction, two step},
+            symbolic x coords={switch,twiddle,table, two step},
             ybar
         ]
 
             \addplot plot coordinates {
-                (switch, \gZrevcompZsimple) (twiddle, \gZrevcompZtwiddle) (subtraction, \gZrevcompZsubtraction) (two step, \gZrevcompZtwostep)
+                (switch, \gZrevcompZsimple) (twiddle, \gZrevcompZtwiddle) (table, \gZrevcompZtable) (two step, \gZrevcompZtwostep)
             };
             \addlegendentry{GCC}
 
             \addplot plot coordinates {
-                (switch, \clangZrevcompZsimple) (twiddle, \clangZrevcompZtwiddle) (subtraction, \clangZrevcompZsubtraction) (two step, \clangZrevcompZtwostep)
+                (switch, \clangZrevcompZsimple) (twiddle, \clangZrevcompZtwiddle) (table, \clangZrevcompZtable) (two step, \clangZrevcompZtwostep)
             };
             \addlegendentry{Clang}
 
@@ -449,9 +465,9 @@ Here we compare four different ways of computing the reverse complement. As a ba
     \caption{}
     \label{fig:revcomp}
 \end{wrapfigure}
-\noindent bitwise-exclusive-or. Lastly, one method (two step) splits the process into two parts. First, all nucleotides are complemented, then the string is reversed.
+\noindent  \textsc{MUMmer}~uses a table lookup. Lastly, one method (two step) splits the process into two parts. First, all nucleotides are complemented, then the string is reversed.
 
-It can be seen in Figure~{} that the switch method is by far the slowest. All other methods are up to two orders of magnitude faster. Among them the two step process is the slowest. Twiddling and subtraction have virtually identical runtimes. All results are the same across compilers.
+It can be seen in Figure~\ref{fig:revcomp} that the switch method is by far the slowest. All other methods are at least one order of magnitude faster. Among them the table lookup is the slowest, followed by a two-step process. Twiddling leads to the best performance. All results are the same across compilers.
 
 }
 
@@ -499,19 +515,19 @@ To compare the performance of different ways of counting transversions, we simpl
 \end{wrapfigure}
 \noindent choose counting mutations as a baseline.
 
-The~simple~way~of~counting transversions~cannot be vectorized and thus is about ten times slower than counting only mutations. However, the new twiddling method presented in Section~\ref{sec:transversions} can be vectorized, an thus is almost as the first method.
+The~simple~way~of~counting transversions~cannot be vectorized and thus is about ten times slower than counting only mutations. However, the new twiddling method presented in Section~\ref{sec:transversions} can be vectorized, an thus is almost as fast as the first method.
 
 }
 
 % \section*{Acknowledgments}
 % Schlegel for the \LaTeX template %\cite{Schlegel2016}.
 
+\vspace*{3cm}
+
 \nolinenumbers
 
-%This is where your bibliography is generated. Make sure that your .bib file is actually called library.bib
-\bibliography{library}
+\bibliography{twid}
 
-%This defines the bibliographies style. Search online for a list of available styles.
 \bibliographystyle{abbrv}
 
 \end{document}
