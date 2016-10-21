@@ -357,17 +357,17 @@ In Section~\ref{sec:gccontent} we describe, how the GC-content of a sequence can
             ylabel={Runtime (ns)},
             xtick=data,
             % xlabel={Method},
-            symbolic x coords={simple,twiddle},
+            symbolic x coords={simple,twiddle,table},
             ybar
         ]
 
             \addplot plot coordinates {
-                (simple, \gZgccontentZlength) (twiddle, \gZgccontentZlengthZtwiddle)
+                (simple, \gZgccontentZlength) (twiddle, \gZgccontentZlengthZtwiddle) (table, \gZgccontentZtable)
             };
             \addlegendentry{GCC}
 
             \addplot plot coordinates {
-                (simple, \clangZgccontentZlength) (twiddle, \clangZgccontentZlengthZtwiddle)
+                (simple, \clangZgccontentZlength) (twiddle, \clangZgccontentZlengthZtwiddle) (table, \clangZgccontentZtable)
             };
             \addlegendentry{Clang}
 
@@ -401,17 +401,17 @@ We compare the two hashing procedures defined in Section~\ref{sec:hash}. One use
         	ylabel={Runtime (ns)},
         	xtick=data,
         	% xlabel={Method},
-        	symbolic x coords={switch,twiddle},
+        	symbolic x coords={switch,twiddle,table},
         	ybar
         ]
 
             \addplot plot coordinates {
-            	(switch, \gZhashZsimple) (twiddle, \gZhashZtwiddle)
+            	(switch, \gZhashZsimple) (twiddle, \gZhashZtwiddle) (table, \gZhashZtable)
             };
             \addlegendentry{GCC}
 
             \addplot plot coordinates {
-            	(switch, \clangZhashZsimple) (twiddle, \clangZhashZtwiddle)
+            	(switch, \clangZhashZsimple) (twiddle, \clangZhashZtwiddle) (table, \clangZhashZtable)
             };
             \addlegendentry{Clang}
 
@@ -483,27 +483,27 @@ To compare the performance of different ways of counting transversions, we simpl
     \textbf{Figure \ref{fig:transversions}. Counting Transversions.} Runtime of different methods for counting mutations and transversions. Shown is the minimum of \gZhashZruns~runs.
 }
 
-\begin{wrapfigure}{l}{65mm}
+\begin{wrapfigure}{l}{75mm}
     \begin{tikzpicture}
         \begin{semilogyaxis}[
-            width=6cm,
+            width=7cm,
             height=6cm,
             title={Transversions},
             ylabel={Runtime (ns)},
             xtick=data,
-            enlarge x limits=.3,
+            enlarge x limits=.2,
             % xlabel={Method},
-            symbolic x coords={mutations,transversions,twiddle},
+            symbolic x coords={mutations,trans,twiddle,table},
             ybar
         ]
 
             \addplot plot coordinates {
-                (mutations, \gZtransversionsZmutationsZlength) (twiddle, \gZtransversionsZtwiddle) (transversions, \gZtransversionsZtransversions)
+                (mutations, \gZtransversionsZmutationsZlength) (twiddle, \gZtransversionsZtwiddle) (trans, \gZtransversionsZtransversions) (table, \gZtransversionsZtable)
             };
             \addlegendentry{GCC}
 
             \addplot plot coordinates {
-                (mutations, \clangZtransversionsZmutationsZlength) (twiddle, \clangZtransversionsZtwiddle) (transversions, \clangZtransversionsZtransversions)
+                (mutations, \clangZtransversionsZmutationsZlength) (twiddle, \clangZtransversionsZtwiddle) (trans, \clangZtransversionsZtransversions) (table, \clangZtransversionsZtable)
             };
             \addlegendentry{Clang}
 
@@ -513,7 +513,7 @@ To compare the performance of different ways of counting transversions, we simpl
     \caption{}
     \label{fig:transversions}
 \end{wrapfigure}
-\noindent choose counting mutations as a baseline.
+\noindent choose~counting~mutations as a baseline.
 
 The~simple~way~of~counting transversions~cannot be vectorized and thus is about ten times slower than counting only mutations. However, the new twiddling method presented in Section~\ref{sec:transversions} can be vectorized, an thus is almost as fast as the first method.
 
