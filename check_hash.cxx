@@ -24,6 +24,10 @@ int main()
 	std::cout << "twiddle length: " << hash2 << "\n";
 	assert(hash == hash2);
 
+	hash2 = hash_table(seq, LENGTH);
+	std::cout << "table: " << hash2 << "\n";
+	assert(hash == hash2);
+
 	free(seq);
 	return 0;
 }

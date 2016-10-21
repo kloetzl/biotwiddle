@@ -5,7 +5,7 @@
 #include "hash.h"
 
 static const size_t LENGTH = 100000;
-static const size_t K = 16;
+static const size_t K = 32;
 
 static void hash_simple(benchmark::State &state)
 {
@@ -54,5 +54,22 @@ static void hash_twiddle_length(benchmark::State &state)
 	free(forward);
 }
 BENCHMARK(hash_twiddle_length);
+
+
+static void hash_table(benchmark::State &state)
+{
+	char *forward = (char *)malloc(LENGTH + 1);
+	gen(forward, LENGTH);
+
+	while (state.KeepRunning()) {
+		for (char *kmer = forward; kmer < forward + LENGTH - K; kmer++) {
+			size_t hash = hash_table(kmer, K);
+			escape(&hash);
+		}
+	}
+
+	free(forward);
+}
+BENCHMARK(hash_table);
 
 BENCHMARK_MAIN();
