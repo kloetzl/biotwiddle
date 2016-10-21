@@ -55,3 +55,24 @@ static inline double gccontent_length_twiddle(const char *seq, size_t length)
 
 	return (double)gc / length;
 }
+
+static inline double gccontent_table(const char *seq, size_t length)
+{
+	static char table[127];
+	table['A'] = 0;
+	table['C'] = 1;
+	table['G'] = 1;
+	table['T'] = 0;
+
+	size_t gc = 0;
+	size_t i = 0;
+
+	for (; i < length; i++) {
+		if (table[seq[i]]) {
+			gc++;
+		}
+	}
+
+	return (double)gc / length;
+}
+

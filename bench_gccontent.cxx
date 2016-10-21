@@ -62,4 +62,18 @@ static void gccontent_length_twiddle(benchmark::State &state)
 }
 BENCHMARK(gccontent_length_twiddle);
 
+static void gccontent_table(benchmark::State &state)
+{
+	char *sequence = (char *)malloc(LENGTH + 1);
+	gen(sequence, LENGTH);
+
+	while (state.KeepRunning()) {
+		double gc = gccontent_table(sequence, LENGTH);
+		escape(&gc);
+	}
+
+	free(sequence);
+}
+BENCHMARK(gccontent_table);
+
 BENCHMARK_MAIN();

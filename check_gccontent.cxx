@@ -29,6 +29,10 @@ int main()
 	std::cout << "length_twiddle: " << gc2 << "\n";
 	assert(abs(gc - gc2) < 1e-4);
 
+	gc2 = gccontent_table(seq, LENGTH);
+	std::cout << "table: " << gc2 << "\n";
+	assert(abs(gc - gc2) < 1e-4);
+
 	free(seq);
 	return 0;
 }
