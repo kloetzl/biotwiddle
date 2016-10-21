@@ -1,5 +1,5 @@
 double transversions_mutations(const char *subject, size_t length,
-							  const char *query)
+							   const char *query)
 {
 	size_t mutations = 0;
 	const char *sbj = subject, *qry = query;
@@ -14,7 +14,7 @@ double transversions_mutations(const char *subject, size_t length,
 }
 
 double transversions_mutations_length(const char *subject, size_t length,
-									 const char *query)
+									  const char *query)
 {
 	size_t mutations = 0;
 
@@ -28,7 +28,7 @@ double transversions_mutations_length(const char *subject, size_t length,
 }
 
 double transversions_transversions(const char *subject, size_t length,
-								  const char *query)
+								   const char *query)
 {
 	static const auto is_purine = [](char c) { return c == 'A' || c == 'G'; };
 
@@ -53,7 +53,7 @@ double transversions_transversions(const char *subject, size_t length,
 }
 
 double transversions_twiddle_length(const char *subject, size_t length,
-								   const char *query)
+									const char *query)
 {
 	size_t transversions = 0;
 
@@ -67,7 +67,7 @@ double transversions_twiddle_length(const char *subject, size_t length,
 }
 
 double transversions_builtin(const char *subject, size_t length,
-							const char *query)
+							 const char *query)
 {
 	size_t transversions = 0;
 
@@ -83,10 +83,8 @@ double transversions_builtin(const char *subject, size_t length,
 	return static_cast<double>(transversions) / length;
 }
 
-
-
 double transversions_table(const char *subject, size_t length,
-							const char *query)
+						   const char *query)
 {
 	static char table[127];
 	table['A'] = 1;

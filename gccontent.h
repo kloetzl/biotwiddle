@@ -75,4 +75,3 @@ static inline double gccontent_table(const char *seq, size_t length)
 
 	return (double)gc / length;
 }
-

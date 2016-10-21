@@ -55,7 +55,6 @@ static void hash_twiddle_length(benchmark::State &state)
 }
 BENCHMARK(hash_twiddle_length);
 
-
 static void hash_table(benchmark::State &state)
 {
 	char *forward = (char *)malloc(LENGTH + 1);
