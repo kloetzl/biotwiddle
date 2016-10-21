@@ -48,7 +48,11 @@ int main()
 
 	auto trans3 = transversions_builtin(subject, LENGTH, query);
 	std::cout << "builtin: " << trans3 << "\n";
-	assert(abs(trans - trans2) < 10.0 / LENGTH);
+	assert(abs(trans - trans3) < 10.0 / LENGTH);
+
+	auto trans4 = transversions_table(subject, LENGTH, query);
+	std::cout << "table: " << trans4 << "\n";
+	assert(abs(trans - trans4) < 10.0 / LENGTH);
 
 	free(subject);
 	free(query);

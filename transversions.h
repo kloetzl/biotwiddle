@@ -82,3 +82,24 @@ double transversions_builtin(const char *subject, size_t length,
 
 	return static_cast<double>(transversions) / length;
 }
+
+
+
+double transversions_table(const char *subject, size_t length,
+							const char *query)
+{
+	static char table[127];
+	table['A'] = 1;
+	table['G'] = 1;
+	table['C'] = 0;
+	table['T'] = 0;
+	size_t transversions = 0;
+
+	for (size_t k = 0; k < length; k++) {
+		if (table[subject[k]] ^ table[query[k]]) {
+			transversions++;
+		}
+	}
+
+	return static_cast<double>(transversions) / length;
+}

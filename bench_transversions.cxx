@@ -144,4 +144,21 @@ static void transversions_builtin(benchmark::State &state)
 }
 BENCHMARK(transversions_builtin);
 
+static void transversions_table(benchmark::State &state)
+{
+	char *subject = static_cast<char *>(malloc(LENGTH + 1));
+	char *query = static_cast<char *>(malloc(LENGTH + 1));
+	gen(subject, LENGTH, 1729);
+	gen(query, LENGTH, 8003);
+
+	while (state.KeepRunning()) {
+		size_t transversions = transversions_table(subject, LENGTH, query);
+		escape(&transversions);
+	}
+
+	free(subject);
+	free(query);
+}
+BENCHMARK(transversions_table);
+
 BENCHMARK_MAIN();
