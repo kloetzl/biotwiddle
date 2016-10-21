@@ -18,8 +18,8 @@ RUNS ?= 3
 
 all: twid.pdf
 
-twid.pdf: twid.tex twid.bbl $(TEX) $(BENCH_CLANG) $(BENCH_GCC)
-	pdflatex $<
+twid.pdf: $(BENCH_CLANG) $(BENCH_GCC) $(TEX) twid.tex twid.bbl
+	pdflatex twid.tex
 	evince $@ &
 
 twid.aux: twid.tex
