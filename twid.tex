@@ -378,10 +378,10 @@ In Section~\ref{sec:gccontent} we describe, how the GC-content of a sequence can
     \label{fig:gccontent}
 \end{wrapfigure}
 
-\noindent fewer comparisons than~necessary~at~first~glance. We created two methods, one representing the simple way of counting and the other the explicit twiddling way. As modern compilers optimize the generated code, we do not expect any significant difference between the two methods.
+\noindent fewer comparisons than~necessary~at~first~glance. We created two methods, one representing the simple way of counting and the other the explicit twiddling way. As modern compilers optimize the generated code, we do not expect any significant difference between the two methods. As a third method we use a table look up.
 
-Figure~\ref{fig:gccontent} shows the benchmarking results for the two methods. 
-Using the GNU Compiler both methods are almost equally fast. However, Clang fails to optimize the simple method. It still makes one extra comparison leading to many more branches and thus a high number of branch misses. This leads to a roughly 25 times slower function.
+Figure~\ref{fig:gccontent} shows the benchmarking results for the three methods. 
+Using the GNU Compiler all methods are almost equally fast. However, Clang fails to optimize the simple method. It still makes one extra comparison leading to many more branches and thus a high number of branch misses. This leads to a roughly 25 times slower function.
 
 }
 
@@ -389,7 +389,7 @@ Using the GNU Compiler both methods are almost equally fast. However, Clang fail
 \newpage{}
 \subsection{Hashing}
 
-We compare the two hashing procedures defined in Section~\ref{sec:hash}. One uses a big switch statement to map the nucleotides to an index. The other exploits the ASCII 
+We compare the two hashing procedures defined in Section~\ref{sec:hash}, with one using a look-up table. One uses a big switch statement to map the nucleotides to an index. The other
 
 \begin{wrapfigure}[16]{r}{65mm}
     \begin{tikzpicture}
@@ -419,9 +419,11 @@ We compare the two hashing procedures defined in Section~\ref{sec:hash}. One use
     \end{tikzpicture}
     \caption{Runtime of different k-mer hashing procedures.}
 \end{wrapfigure}
-\noindent representation of the characters to achieve the same result, much faster. We measured the performance by having both methods compute the hash of all $k$-mers in a long sequence with $k = 16$.
+\noindent exploits~the~ASCII~representation~of~the characters~to~achieve~the~same~result, much~faster.~We~measured~the~performance by~having~both~methods~compute~the hash of~all~$k$-mers~in~a~long~sequence with $k = 16$.
 
-As we would have hoped, the twiddling method is faster, by a factor of 3. This is due to different reasons. The twiddle method utilizes more instruction-level parallelism. On an Intel Core i5-5200U the simple method executes about 1.19 instructions per cycle. However, using twiddling, that number can be ramped up to 3.75. On the contrary, the number of branches and especially the number of branch misses goes down. Whereas for the simple method 25\% of all branches are missed, it is only 0.02\% for twiddle.
+As we would have hoped, the twiddling method is faster than the simple switch, by a factor of 3. This is due to different reasons. The twiddle method utilizes more instruction-level parallelism. On an Intel Core i5-5200U the simple method executes about 1.19 instructions per cycle. However, using twiddling, that number can be ramped up to 3.75. On the contrary, the number of branches and especially the number of branch misses goes down. Whereas for the simple method 25\% of all branches are missed, it is only 0.02\% for twiddle.
+
+Using a look-up table is even faster than twiddling by roughly 20\%. This is mainly due to a greatly reduced number of instructions.
 
 
 \subsection{Reverse Complement}
@@ -515,7 +517,8 @@ To compare the performance of different ways of counting transversions, we simpl
 \end{wrapfigure}
 \noindent choose~counting~mutations as a baseline.
 
-The~simple~way~of~counting transversions~cannot be vectorized and thus is about ten times slower than counting only mutations. However, the new twiddling method presented in Section~\ref{sec:transversions} can be vectorized, an thus is almost as fast as the first method.
+The~simple~way~of~counting transversions~cannot be vectorized and thus is more than ten times slower than counting only mutations. However, the new twiddling method presented in Section~\ref{sec:transversions} can be vectorized, an thus is almost as fast as the first method. Likewise, using a look-up table cannot be vectorized as thus is slower than twiddling, but ten times faster than a simple comparison.
+
 
 }
 
