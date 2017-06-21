@@ -27,6 +27,9 @@ int main()
 	rev2 = revcomp_twocase(seq, LENGTH, rev2);
 	assert(strcmp(rev, rev2) == 0);
 
+	rev2 = revcomp_twocase_switch(seq, LENGTH, rev2);
+	assert(strcmp(rev, rev2) == 0);
+
 	rev2 = revcomp_twiddle(seq, LENGTH, rev2);
 	assert(strcmp(rev, rev2) == 0);
 

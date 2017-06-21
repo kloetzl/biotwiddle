@@ -71,6 +71,22 @@ static void revcomp_twocase(benchmark::State &state)
 }
 BENCHMARK(revcomp_twocase);
 
+static void revcomp_twocase_switch(benchmark::State &state)
+{
+	char *forward = (char *)malloc(LENGTH + 1);
+	char *reverse = (char *)malloc(LENGTH + 1);
+	gen(forward, LENGTH);
+
+	while (state.KeepRunning()) {
+		revcomp_twocase_switch(forward, LENGTH, reverse);
+		escape(reverse);
+	}
+
+	free(forward);
+	free(reverse);
+}
+BENCHMARK(revcomp_twocase_switch);
+
 static void revcomp_twiddle(benchmark::State &state)
 {
 	char *forward = (char *)malloc(LENGTH + 1);
