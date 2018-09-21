@@ -14,3 +14,7 @@ make
 
 This compiles the code, runs unit tests, benchmarks and uses those results for figures in the LaTeX files.
 
+## Maintenance Warning
+
+Though the findings reported in the paper are still mostly valid, this repository has been superseeded by [libdna](https://github.com/kloetzl/libdna). Consider biotwiddle unmaintained.
+
